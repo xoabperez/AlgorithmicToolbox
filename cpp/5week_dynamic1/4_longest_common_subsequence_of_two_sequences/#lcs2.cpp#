@@ -90,6 +90,19 @@ int lcs2(vector<int> &a, vector<int> &b) {
     }
   }
 
+  // Check the edges
+  for (size_t i = 0; i <= m; i++){
+    distances[i][n] = i; // "Deletion" of first string
+    previous[i][0][0] = 0;
+    previous[i][0][1] = 0;
+  }
+  for (size_t j = 0; j <= n; j++){
+    distances[0][j] = j; // "Insertion" into first string
+    previous[0][j][0] = 0;
+    previous[0][j][1] = 0;
+  }
+  
+  
   // Find the chain that was used to get the minimum distance, and count the number of matches here
   int row = m, col = n, temp_col, temp_row, match = 0;
   while (row != 0 || col != 0){
