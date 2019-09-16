@@ -6,24 +6,20 @@ using std::vector;
 // 0 for no stress test
 // 1 for random stress test
 // 2 for input stress test
-int stress_test = 2;
+int stress_test = 0;
 
 int lcs2(vector<int> &a, vector<int> &b) {
 
-  // Use the vector sizes to set up memoization array and array to track previous values
+  // Use the vector sizes to set up memoization array
   auto m = a.size(), n = b.size();
-  int distances[m+1][n+1], previous[m+1][n+1][2];
+  int distances[m+1][n+1];
 
-  // Fill out first row/column with index
+  // Fill out first row with zeros
   for (size_t i = 0; i <= m; i++){
-    distances[i][0] = i; // "Deletion" of first string
-    previous[i][0][0] = 0;
-    previous[i][0][1] = 0;
+    distances[i][0] = 0; 
   }
   for (size_t j = 0; j <= n; j++){
-    distances[0][j] = j; // "Insertion" into first string
-    previous[0][j][0] = 0;
-    previous[0][j][1] = 0;
+    distances[0][j] = 0; 
   }
 
   size_t i = 0, j = 0;
@@ -34,54 +30,17 @@ int lcs2(vector<int> &a, vector<int> &b) {
     i = (k/n) + 1;   //row
     j = (k % n) + 1; //col
     
-    // If in top right, go up
-    if (i < j){
-      if (distances[i-1][j] < distances[i-1][j-1]){
-	distances[i][j] = distances[i-1][j] + 1;
-	previous[i][j][0] = i-1;
-	previous[i][j][1] = j;
-      }
-      else{
-	distances[i][j] = distances[i-1][j-1] + 1;
-	previous[i][j][0] = i-1;
-	previous[i][j][1] = j-1;
-      }
-    }
-    // If bottom left, go right
-    else if (i > j){
-      if (distances[i][j-1] < distances[i-1][j-1]){
-	distances[i][j] = distances[i][j-1] + 1;
-	previous[i][j][0] = i;
-	previous[i][j][1] = j-1;
-      }
-      else{
-	distances[i][j] = distances[i-1][j-1] + 1;
-	previous[i][j][0] = i-1;
-	previous[i][j][1] = j-1;
-      }
-    }
-    // If on diagonal, go to diagonal
-    else {
-      distances[i][j] = distances[i-1][j-1] + 1;
-      previous[i][j][0] = i-1;
-      previous[i][j][1] = j-1;
-    }
     // Check for match
     if (a[i-1] == b[j-1]){
-      distances[i][j] = distances[i-1][j-1];
-      previous[i][j][0] = i-1;
-      previous[i][j][1] = j-1;
+      distances[i][j] = std::max(distances[i-1][j-1]+1, distances[i][j-1]);
+    }
+    else {
+      distances[i][j] = std::max(distances[i][j-1], distances[i-1][j]);
     }
   }
 
   // Show matrices 
   if(stress_test != 0){
-    for (size_t i = 0; i <= m; i++){
-      for (size_t j = 0; j <= n; j++){
-	std::cout << previous[i][j][0] << "," << previous[i][j][1] << " ";
-      }
-      std::cout << std::endl;
-    }
     for (size_t i = 0; i <= m; i++){
       for (size_t j = 0; j <= n; j++){
 	std::cout << distances[i][j] << " ";
@@ -90,20 +49,7 @@ int lcs2(vector<int> &a, vector<int> &b) {
     }
   }
 
-  // Find the chain that was used to get the minimum distance, and count the number of matches here
-  int row = m, col = n, temp_col, temp_row, match = 0;
-  while (row != 0 || col != 0){
-    temp_row = row;
-    temp_col = col;    
-    std::cout << temp_row << "," << temp_col << " ";
-    row = previous[temp_row][temp_col][0];
-    col = previous[temp_row][temp_col][1];
-    if (distances[temp_row][temp_col] == distances[row][col]){
-      match++;
-    }
-  }
-  
-  return match;
+  return distances[m][n];
 }
 
 int main() {
